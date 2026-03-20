@@ -1,25 +1,14 @@
-// 1. 필요한 기능들 불러오기 (Firestore 기능 추가)
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-import { getFirestore, collection, addDoc, query, orderBy, onSnapshot } 
-from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
-
-// 2. 방금 복사해오신 사용자님의 설정값 (중요!)
 const firebaseConfig = {
-    apiKey: "AIzaSyBptRrQLbYBHAza4wB_9M_9CvO_VPXWTyo",
-    authDomain: "jmemo-5ec72.firebaseapp.com",
-    projectId: "jmemo-5ec72",
-    storageBucket: "jmemo-5ec72.firebasestorage.app",
-    messagingSenderId: "506943089076",
-    appId: "1:506943089076:web:b5925e5a96ed07276caae1"
+  apiKey: "AIzaSyBptRrQLbYBHAza4wB_9M_9CvO_VPXWTyo",
+  authDomain: "jmemo-5ec72.firebaseapp.com",
+  projectId: "jmemo-5ec72",
+  storageBucket: "jmemo-5ec72.firebasestorage.app",
+  messagingSenderId: "506943089076",
+  appId: "1:506943089076:web:b5925e5a96ed07276caae1",
 };
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
 
-// 3. Firebase 및 데이터베이스(Firestore) 초기화
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-
-// --- 이 아래부터는 기존에 작성하신 메모 로직(saveMemo 등)을 그대로 두시면 됩니다! ---
-
-const STORAGE_KEY = "jmemo-topics";
 const EMOJIS = ["📘", "🍱", "🧁", "🎬", "✈️", "🐶", "🌼", "🎵", "🍓", "🧸", "☁️", "🍕", "📚", "🎨", "🌙"];
 
 const elements = {
@@ -37,7 +26,7 @@ const elements = {
   doubleTemplate: document.querySelector("#double-item-form-template"),
 };
 
-let topics = loadTopics();
+let topics = [];
 let studyState = {
   topicId: "",
   mode: "allow",
@@ -56,6 +45,16 @@ function bootstrap() {
   bindEvents();
   toggleEmojiField();
   renderAll();
+
+  db.collection("topics")
+    .orderBy("createdAt")
+    .onSnapshot((snapshot) => {
+      topics = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+      if (studyState.topicId) {
+        syncStudyAfterTopicChange(studyState.topicId);
+      }
+      renderAll();
+    });
 }
 
 function bindEvents() {
@@ -105,20 +104,19 @@ function handleTopicCreate(event) {
     return;
   }
 
-  topics.push({
-    id: crypto.randomUUID(),
+  const id = crypto.randomUUID();
+  db.collection("topics").doc(id).set({
     name,
     type,
     emoji,
     items: [],
+    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
   });
 
-  persistTopics();
   elements.topicForm.reset();
   elements.topicType.value = "single";
   selectedEmoji = EMOJIS[0];
   toggleEmojiField();
-  renderAll();
 }
 
 function syncEmojiSelection() {
@@ -197,10 +195,8 @@ function handleItemCreate(event) {
     });
   }
 
-  persistTopics();
+  db.collection("topics").doc(topic.id).update({ items: topic.items });
   form.reset();
-  syncStudyAfterTopicChange(topic.id);
-  renderAll();
 }
 
 function handleListClick(event) {
@@ -223,15 +219,13 @@ function handleListClick(event) {
 
   if (deleteTopicButton) {
     const topicId = deleteTopicButton.dataset.deleteTopic;
-    topics = topics.filter((topic) => topic.id !== topicId);
     expandedTopicIds.delete(topicId);
 
     if (studyState.topicId === topicId) {
       resetStudyState();
     }
 
-    persistTopics();
-    renderAll();
+    db.collection("topics").doc(topicId).delete();
     return;
   }
 
@@ -244,10 +238,8 @@ function handleListClick(event) {
       return;
     }
 
-    topic.items = topic.items.filter((item) => item.id !== itemId);
-    persistTopics();
-    syncStudyAfterTopicChange(topic.id);
-    renderAll();
+    const updatedItems = topic.items.filter((item) => item.id !== itemId);
+    db.collection("topics").doc(topicId).update({ items: updatedItems });
   }
 }
 
@@ -256,7 +248,7 @@ function startStudySession() {
   const topic = topics.find((entry) => entry.id === topicId);
 
   if (!topic || topic.items.length === 0) {
-    renderStudyEmpty("단어가 있는 주제를 선택해 주세요.");
+    renderStudyEmpty("이 주제에는 아직 메모가 없어요. 메모를 추가해 주세요.");
     return;
   }
 
@@ -403,7 +395,7 @@ function renderTopicCard(topic) {
           <div class="topic-card__emoji">${topic.emoji}</div>
           <div>
             <h3>${escapeHtml(topic.name)}</h3>
-            <p>${topic.type === "single" ? "단면 단어장" : "양면 단어장"} · ${topic.items.length}개</p>
+            <p>${topic.type === "single" ? "단면 메모장" : "양면 메모장"} · ${topic.items.length}개</p>
           </div>
         </div>
         <div class="topic-card__actions">
@@ -419,8 +411,8 @@ function renderTopicCard(topic) {
         <div class="helper-text">
           ${
             topic.type === "single"
-              ? "단면은 한 개의 단어만 저장돼요. 랜덤 제시 시 단어가 그대로 보여요."
-              : "양면은 A와 B 세트로 저장돼요. 랜덤 제시 시 A가 나오고 B를 맞혀야 해요."
+              ? "단면은 한 개의 메모만 저장돼요. 랜덤 제시 시 메모가 그대로 보여요."
+              : "양면은 문제와 정답이 세트로 저장돼요. 랜덤 제시 시 문제가 나오고 정답을 맞혀야 해요."
           }
         </div>
         ${formMarkup}
@@ -460,14 +452,14 @@ function renderStudyCard() {
   }
 
   if (!studyState.currentItemId) {
-    renderStudyEmpty("랜덤 시작 버튼을 눌러 문제를 꺼내보세요.");
+    renderStudyEmpty("랜덤 시작 버튼을 눌러 메모를 꺼내보세요.");
     return;
   }
 
   const item = topic.items.find((entry) => entry.id === studyState.currentItemId);
 
   if (!item) {
-    renderStudyEmpty("현재 문제를 불러오지 못했어요. 다시 시작해 주세요.");
+    renderStudyEmpty("현재 메모를 불러오지 못했어요. 다시 시작해 주세요.");
     return;
   }
 
@@ -481,11 +473,11 @@ function renderStudyCard() {
           <div class="pill">단면</div>
         </div>
         <div class="question-card">
-          <p class="question-label">이번에 나온 단어</p>
+          <p class="question-label">이번에 나온 메모</p>
           <h3 class="question-value">${escapeHtml(item.value)}</h3>
         </div>
         <div class="study-actions">
-          <button class="button button--primary" type="button" data-action="next">다음 단어</button>
+          <button class="button button--primary" type="button" data-action="next">다음 메모</button>
           <button class="button button--secondary" type="button" data-action="restart">처음부터 다시</button>
         </div>
       </div>
@@ -514,16 +506,16 @@ function renderStudyCard() {
         <div class="pill">양면</div>
       </div>
       <div class="question-card">
-        <p class="question-label">제시어 A</p>
+        <p class="question-label">문제</p>
         <h3 class="question-value">${escapeHtml(item.front)}</h3>
       </div>
       <form class="answer-form">
         <label class="field">
-          <span>B를 입력해보세요</span>
+          <span>정답</span>
           <input
             name="answer"
             type="text"
-            placeholder="정답을 입력해 주세요"
+            placeholder="정답을 입력해 주세요."
             ${studyState.checked ? `value="${escapeAttribute(studyState.feedback?.userAnswer || "")}"` : ""}
             required
           />
@@ -590,22 +582,6 @@ function resetStudyState() {
     checked: false,
     feedback: null,
   };
-}
-
-function loadTopics() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    const parsed = raw ? JSON.parse(raw) : [];
-
-    return Array.isArray(parsed) ? parsed : [];
-  } catch (error) {
-    console.error("Failed to read saved topics", error);
-    return [];
-  }
-}
-
-function persistTopics() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(topics));
 }
 
 function normalizeText(text) {

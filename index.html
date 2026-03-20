@@ -117,17 +117,19 @@
     <template id="double-item-form-template">
       <form class="item-form item-form--double">
         <label class="field">
-          <span>A</span>
+          <span>문제</span>
           <input name="front" type="text" maxlength="60" placeholder="예: hello" required />
         </label>
         <label class="field">
-          <span>B</span>
+          <span>정답</span>
           <input name="back" type="text" maxlength="60" placeholder="예: 안녕하세요" required />
         </label>
         <button class="button button--secondary" type="submit">추가</button>
       </form>
     </template>
 
-    <script type="module" src="script.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js"></script>
+    <script src="script.js"></script>
   </body>
 </html>
