@@ -171,7 +171,7 @@ function handleItemCreate(event) {
     }
 
     if (topic.items.some((item) => normalizeText(item.front) === normalizeText(front))) {
-      frontInput.setCustomValidity("이미 등록된 A 값이에요.");
+      frontInput.setCustomValidity("이미 등록된 메모예요.");
       frontInput.reportValidity();
       return;
     }
@@ -310,7 +310,7 @@ function selectNextQuestion() {
   const topic = topics.find((entry) => entry.id === studyState.topicId);
 
   if (!topic || topic.items.length === 0) {
-    renderStudyEmpty("단어가 남아 있지 않아요. 주제를 다시 확인해 주세요.");
+    renderStudyEmpty("메모가 남아 있지 않아요. 주제를 다시 확인해 주세요.");
     return;
   }
 
@@ -386,7 +386,7 @@ function renderTopicCard(topic) {
   const itemsMarkup =
     topic.items.length > 0
       ? topic.items.map((item) => renderItemRow(topic, item)).join("")
-      : `<div class="empty-state">아직 등록된 ${topic.type === "single" ? "단어" : "세트"}가 없어요.</div>`;
+      : `<div class="empty-state">아직 등록된 ${topic.type === "single" ? "메모" : "세트"}가 없어요.</div>`;
 
   return `
     <article class="topic-card">
@@ -452,7 +452,7 @@ function renderStudyCard() {
   }
 
   if (!studyState.currentItemId) {
-    renderStudyEmpty("랜덤 시작 버튼을 눌러 메모를 꺼내보세요.");
+    renderStudyEmpty("랜덤 시작 버튼을 눌러 보세요.");
     return;
   }
 
