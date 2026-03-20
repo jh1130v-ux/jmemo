@@ -1,3 +1,24 @@
+// 1. 필요한 기능들 불러오기 (Firestore 기능 추가)
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+import { getFirestore, collection, addDoc, query, orderBy, onSnapshot } 
+from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+// 2. 방금 복사해오신 사용자님의 설정값 (중요!)
+const firebaseConfig = {
+    apiKey: "AIzaSyBptRrQLbYBHAza4wB_9M_9CvO_VPXWTyo",
+    authDomain: "jmemo-5ec72.firebaseapp.com",
+    projectId: "jmemo-5ec72",
+    storageBucket: "jmemo-5ec72.firebasestorage.app",
+    messagingSenderId: "506943089076",
+    appId: "1:506943089076:web:b5925e5a96ed07276caae1"
+};
+
+// 3. Firebase 및 데이터베이스(Firestore) 초기화
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// --- 이 아래부터는 기존에 작성하신 메모 로직(saveMemo 등)을 그대로 두시면 됩니다! ---
+
 const STORAGE_KEY = "jmemo-topics";
 const EMOJIS = ["📘", "🍱", "🧁", "🎬", "✈️", "🐶", "🌼", "🎵", "🍓", "🧸", "☁️", "🍕", "📚", "🎨", "🌙"];
 
