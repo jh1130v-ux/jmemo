@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>JMemo</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Pretendard:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="hero">
+        <div class="hero__badge">Study Helper & Lunch Menu</div>
+        <h1>JMemo</h1>
+        <p>
+          외국어 공부부터 점심메뉴 추천까지, 주제를 만들고 랜덤으로 꺼내보는
+          나만의 메모 앱이에요.
+        </p>
+      </header>
+
+      <main class="layout">
+        <section class="panel panel--form">
+          <div class="section-title">
+            <h2>주제 만들기</h2>
+            <p>단면 또는 양면 형식으로 새로운 메모장를 추가해보세요.</p>
+          </div>
+
+          <form id="topic-form" class="topic-form">
+            <label class="field">
+              <span>주제 이름</span>
+              <input
+                id="topic-name"
+                name="topicName"
+                type="text"
+                maxlength="30"
+                placeholder="예: 영어 단어 외우기, 오늘 점심"
+                required
+              />
+            </label>
+
+            <label class="field">
+              <span>메모지 형식</span>
+              <select id="topic-type" name="topicType">
+                <option value="single">단면 (ex: 점심메뉴 추천)</option>
+                <option value="double">양면 (ex: 외국어 공부)</option>
+              </select>
+            </label>
+
+            <div id="emoji-field" class="field">
+              <span>이모지</span>
+              <div class="helper-text">원하는 이모지를 하나 골라주세요.</div>
+              <div id="emoji-picker" class="emoji-picker" aria-label="추천 이모지"></div>
+            </div>
+
+            <button class="button button--primary" type="submit">주제 추가</button>
+          </form>
+        </section>
+
+        <section class="panel panel--study">
+          <div class="section-title">
+            <h2>랜덤 제시</h2>
+            <p>주제를 고르고 랜덤으로 메모를 꺼내보세요.</p>
+          </div>
+
+          <div class="study-controls">
+            <label class="field">
+              <span>주제 선택</span>
+              <select id="study-topic"></select>
+            </label>
+
+            <label class="field">
+              <span>중복 설정</span>
+              <select id="study-mode">
+                <option value="allow">중복 허용</option>
+                <option value="unique">중복 제거</option>
+              </select>
+            </label>
+
+            <button id="start-study" class="button button--primary" type="button">
+              랜덤 시작
+            </button>
+          </div>
+
+          <div id="study-card" class="study-card study-card--empty">
+            <p class="study-empty">
+              주제를 선택하고 랜덤 시작 버튼을 눌러주세요.
+            </p>
+          </div>
+        </section>
+      </main>
+
+      <section class="panel panel--topics">
+        <div class="section-title">
+          <h2>메모 추가하기</h2>
+          <p>주제별 메모를 추가하고 바로 수정해보세요.</p>
+        </div>
+
+        <div id="topics-list" class="topics-list"></div>
+      </section>
+    </div>
+
+    <template id="single-item-form-template">
+      <form class="item-form">
+        <label class="field">
+          <span>메모 추가</span>
+          <input name="word" type="text" maxlength="50" placeholder="예: 짬뽕" required />
+        </label>
+        <button class="button button--secondary" type="submit">추가</button>
+      </form>
+    </template>
+
+    <template id="double-item-form-template">
+      <form class="item-form item-form--double">
+        <label class="field">
+          <span>A</span>
+          <input name="front" type="text" maxlength="60" placeholder="예: hello" required />
+        </label>
+        <label class="field">
+          <span>B</span>
+          <input name="back" type="text" maxlength="60" placeholder="예: 안녕하세요" required />
+        </label>
+        <button class="button button--secondary" type="submit">추가</button>
+      </form>
+    </template>
+
+    <script src="script.js"></script>
+  </body>
+</html>
